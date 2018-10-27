@@ -802,21 +802,21 @@ namespace meta
     template<typename Seq>
     using make_index_sequence_from_sequence = ctti::meta::functor_t<ctti::meta::list<>, ctti::meta::to_index_sequence_t<Seq>>;
 
-    namespace detail
-    {
-        template<typename Function, typename... Ts, std::size_t... Indices>
-        void foreach(ctti::meta::list<Ts...>, ctti::meta::index_sequence<Indices...>, Function function)
-        {
-            (void)function;
-            [](...){}(std::array<int, sizeof...(Ts) + 1>{{(function(ctti::meta::identity<Ts>(), ctti::meta::size_t<Indices>()), 0)..., 0}});
-        }
-    }
+	namespace detail
+	{
+		template<typename Function, std::size_t... Indices, typename... Ts>
+		void foreach(Function function, ctti::meta::index_sequence<Indices...>, ctti::meta::list<Ts...>)
+		{
+			(void)function;
+			[](...) {}(std::array<int, sizeof...(Ts)+1>{(function(ctti::meta::identity<Ts>(), ctti::meta::size_t<Indices>()), 0)..., 0});
+		}
+	}
 
-    template<typename Sequence, typename Function>
-    void foreach(Function function)
-    {
-        ctti::meta::detail::foreach(ctti::meta::apply_functor<ctti::meta::list<>, Sequence>(), ctti::meta::make_index_sequence_from_sequence<Sequence>(), function);
-    }
+	template<typename Sequence, typename Function>
+	void foreach(Function function)
+	{
+		ctti::meta::detail::foreach(function, ctti::meta::make_index_sequence_from_sequence<Sequence>(), ctti::meta::apply_functor<ctti::meta::list<>, Sequence>());
+	}
 }
 
 }
